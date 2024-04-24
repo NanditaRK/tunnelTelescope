@@ -3,9 +3,14 @@ import React, { useRef, useState, useEffect } from "react";
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import {OBJModel} from 'react-3d-viewer'
 import './ObjViewer.css'
-import example from '../src/model/teddy.obj';
+import example from '../src/model/tunnel1.obj';
+import GeologicalHazardAnalyzer from "./GeologicalHazardAnalyzer";
 
 function App() {
+
+
+  
+  
   
   const [eraseMode, setEraseMode] = useState(false);
   const [inputText, setInputText] = useState("");
@@ -47,17 +52,46 @@ function App() {
   };
 
   const handleExportClick = () => {
+    // export the canvas image
     canvasRef.current?.exportImage("png")
       .then(data => {
         console.log(data);
+  
+        // prepare the data to be sent to the server
+        const postData = {
+          input_image: data, //  exported data is an image
+          input_string: inputText // include the input text from the textarea
+        };
+  
+        // Make a POST request to the server
+        fetch('http://localhost97241', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postData)
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.json(); // parse the JSON response
+          } else {
+            throw new Error('Failed to submit data');
+          }
+        })
+        .then(responseData => {
+          // handle the response data from the server
+          console.log('Response from server:', responseData);
+          // display data later here
+        })
+        .catch(error => {
+          console.error('Error submitting data:', error);
+        });
       })
       .catch(e => {
         console.log(e);
       });
-
-      console.log("Input Text:", inputText);
-
   };
+  
 
   const handleInputChange = (event) => {
     setInputText(event.target.value);
@@ -151,8 +185,9 @@ function App() {
      
     
    
-
+      
     </div>
+    
   );
 }
 
