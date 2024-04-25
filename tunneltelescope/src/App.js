@@ -64,7 +64,7 @@ function App() {
         };
   
         // Make a POST request to the server
-        fetch('http://localhost97241', {
+        fetch('http://localhost:61111/get_obj', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
