@@ -30,3 +30,5 @@ yarn-error.log*
 # 3D files
 *.obj
 *.glb
+
+*.pack
