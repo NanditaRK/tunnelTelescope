@@ -2,19 +2,14 @@ import React, { useRef, useState, useEffect } from "react";
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { OBJModel } from 'react-3d-viewer';
 import './ObjViewer.css';
-import example from '../src/model/tunneltelescopelogo.obj'; 
-import { Buffer } from 'buffer';
+//import example from '../src/model/tunneltelescopelogo.obj';
+import example from './display_objs/tmpjgxew4og.obj'; 
 
 function App() {
   const [eraseMode, setEraseMode] = useState(false);
   const [inputText, setInputText] = useState("");
-  const [objSrc, setObjSrc] = useState(null); 
+  const [objSrc, setObjSrc] = useState(example); 
   const canvasRef = useRef(null);
-
-  useEffect(() => {
-    
-    setObjSrc(example); 
-  }, []);
 
   const styles = {
     border: "2px solid green",
@@ -22,6 +17,12 @@ function App() {
     top: "0px",
     width: "40%",
   };
+
+  useEffect(() => {
+    if (objSrc) {
+      console.log("Updated objSrc:", objSrc);
+    }
+  }, [objSrc]);
 
   const handleEraserClick = () => {
     setEraseMode(true);
@@ -64,48 +65,34 @@ function App() {
         };
 
         // Make a POST request to the server
-        fetch('http://localhost:61111/get_obj', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(postData)
+        // Make a POST request to the server
+      fetch('http://localhost:61111/get_obj', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(postData)
+      })
+        .then(response => {
+          if (response.ok) {
+            return response.text();
+          } else {
+            throw new Error('Failed to submit data');
+          }
         })
-          .then(response => {
-            if (response.ok) {
-              return response.text(); // parse the response as text
-            } else {
-              throw new Error('Failed to submit data');
-            }
-          })
-          .then(responseData => {
-            console.log('Response data:', responseData);
-            // Decode the Base64-encoded .obj data
-            const decodedObjData = Buffer.from(responseData, 'base64').toString('binary');
-            
-            // Convert the decoded data into a Blob
-            const blob = new Blob([decodedObjData], { type: 'text/plain' });
-
-            // generate a URL for the Blob
-            const url = URL.createObjectURL(blob);
-            console.log("HI");
-            console.log(url);
-
-            // link src prop of the OBJModel component to the generated URL
-            setObjSrc(url);
-            console.log("HI2");
-            console.log(objSrc);
-
-            setObjSrc(prevObjSrc => {
-              const decodedObjData = Buffer.from(responseData, 'base64').toString('binary');
-              const blob = new Blob([decodedObjData], { type: 'text/plain' });
-              const url = URL.createObjectURL(blob);
-              return url;
-            });
-          })
-          .catch(error => {
-            console.error('Error getting .obj data:', error);
-          });
+        .then(responseData => {
+          // Check if the response is a valid .obj file
+          if (responseData.startsWith('o ')) {
+            setObjSrc(responseData);
+          } else {
+            console.error('Invalid .obj file format:', responseData);
+            // Handle the error, e.g., show an error message to the user
+          }
+        })
+        .catch(error => {
+          console.error('Error getting .obj data:', error);
+          // Handle the error, e.g., show an error message to the user
+        });
       })
       .catch(e => {
         console.error('Error exporting canvas image:', e);
@@ -181,7 +168,7 @@ function App() {
           <input className='m-4 w-fit p-4 h-fit border border-black rounded-lg' onClick={handleExportClick} type='submit' value='Submit' />
         </div>
         <div className="model-container border border-2 h-fit rounded-lg mt-8">
-          {objSrc && <OBJModel style={styles} width="800" height="800" position={{ x: 0, y: 0, z: 0 }} src={objSrc} />}
+          {objSrc && <OBJModel key={objSrc} style={styles} width="800" height="800" position={{ x: 0, y: 0, z: 0 }} src={objSrc} />}
         </div>
       </div>
     </div>
