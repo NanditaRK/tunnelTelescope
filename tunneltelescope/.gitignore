@@ -21,3 +21,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# img files
+*.png
+*.jpg
+*.jpeg
+
+# 3D files
+*.obj
+*.glb
