@@ -3,6 +3,7 @@ import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { OBJModel } from 'react-3d-viewer';
 import './ObjViewer.css';
 import example from '../src/model/tunneltelescopelogo.obj'; 
+import { Buffer } from 'buffer';
 
 function App() {
   const [eraseMode, setEraseMode] = useState(false);
@@ -78,17 +79,29 @@ function App() {
             }
           })
           .then(responseData => {
-            // decode the  .obj data
-            const decodedObjData = atob(responseData);
-
-            // convert the decoded data into a Blob
+            console.log('Response data:', responseData);
+            // Decode the Base64-encoded .obj data
+            const decodedObjData = Buffer.from(responseData, 'base64').toString('binary');
+            
+            // Convert the decoded data into a Blob
             const blob = new Blob([decodedObjData], { type: 'text/plain' });
 
             // generate a URL for the Blob
             const url = URL.createObjectURL(blob);
+            console.log("HI");
+            console.log(url);
 
             // link src prop of the OBJModel component to the generated URL
             setObjSrc(url);
+            console.log("HI2");
+            console.log(objSrc);
+
+            setObjSrc(prevObjSrc => {
+              const decodedObjData = Buffer.from(responseData, 'base64').toString('binary');
+              const blob = new Blob([decodedObjData], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              return url;
+            });
           })
           .catch(error => {
             console.error('Error getting .obj data:', error);
